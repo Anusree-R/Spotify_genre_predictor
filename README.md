@@ -5,7 +5,7 @@ predict a song's genre from its audio features.
 
 🚀 Deployed App
 
-[Link to your deployed app will go here after we deploy]
+https://spotifygenrepredictor.streamlit.app/
 
 ⚙️ How to Run Locally
 
