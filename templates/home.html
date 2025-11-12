@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Genre Predictor</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --spotify-green: #1DB954;
+            --spotify-black: #121212; /* A slightly softer black */
+            --spotify-gray: #282828;
+            --spotify-white: #FFFFFF;
+        }
+        
+        body {
+            font-family: 'Montserrat', Arial, sans-serif; /* Use the new font */
+            background-color: var(--spotify-black);
+            color: var(--spotify-white);
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: var(--spotify-gray);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.7);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px; /* Space between logo and text */
+        }
+        
+        .spotify-logo {
+            width: 50px;
+            height: 50px;
+            fill: var(--spotify-green); /* Color the logo green */
+        }
+
+        h1 {
+            color: var(--spotify-green);
+            margin: 0;
+            font-size: 2.2em;
+        }
+        
+        /* --- Placeholder Search Section --- */
+        .search-section {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #444;
+            margin-bottom: 25px;
+        }
+        .search-section label {
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 10px;
+            color: #b3b3b3; /* Lighter text for the label */
+        }
+        .search-section input[type="text"] {
+            width: 40%;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+            background: #535353;
+            color: var(--spotify-white);
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        
+        /* --- Slider Form Section --- */
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 25px; /* A bit more space between columns */
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #b3b3b3;
+        }
+        select, input[type="range"] {
+            width: 100%;
+        }
+        select {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background: #535353;
+            color: var(--spotify-white);
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        /* --- Custom Green Sliders --- */
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            height: 7px;
+            background: #535353;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px;
+            background: var(--spotify-green);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.15s ease-in-out;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #1ed760; /* Brighter green on hover */
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px;
+            background: var(--spotify-green);
+            border-radius: 50%;
+            cursor: pointer; border: none;
+        }
+        
+        /* --- Predict Button --- */
+        input[type="submit"] {
+            grid-column: 1 / -1; /* Span full width */
+            padding: 15px;
+            background-color: var(--spotify-green);
+            color: var(--spotify-black); /* Black text */
+            border: none;
+            border-radius: 30px; /* Rounded pill shape */
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 700; /* Bolder text */
+            margin-top: 15px;
+            transition: all 0.2s ease-in-out;
+        }
+        input[type="submit"]:hover {
+            background-color: #1ed760;
+            transform: scale(1.03); /* Slightly enlarge on hover */
+            box-shadow: 0 0 10px var(--spotify-green); /* Add a glow */
+        }
+        
+        /* --- Result --- */
+        .result {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--spotify-white);
+        }
+        .result h2 {
+            color: var(--spotify-green);
+            font-size: 1.8em;
+            margin: 0;
+        }
+        
+        /* --- Music Quote --- */
+        .quote-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            text-align: center;
+            color: #b3b3b3;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="header">
+            <svg class="spotify-logo" viewBox="0 0 167.5 167.5" xmlns="http://www.w3.org/2000/svg">
+                <path d="M83.7 0C37.5 0 0 37.5 0 83.7c0 46.3 37.5 83.7 83.7 83.7 46.3 0 83.7-37.5 83.7-83.7C167.5 37.5 130 0 83.7 0zM122 120.8c-1.4 2.5-4.4 3.2-6.8 1.8-17.8-10.9-40-13.4-66.6-7.4-2.7.6-5.5-1.1-6.1-3.7-.6-2.7 1.1-5.5 3.7-6.1 29.1-6.6 53.7-3.8 73.6 8.5 2.5 1.4 3.2 4.4 1.8 6.8zM133.4 98c-1.8 3.1-5.5 4.1-8.6 2.3-21-12.2-52.2-15.8-77.5-8.7-3.4.9-6.8-1.4-7.8-4.8-.9-3.4 1.4-6.8 4.8-7.8 28.1-7.8 62.4-3.9 86.4 10 3.1 1.8 4.1 5.5 2.3 8.6zM134.3 74.4c-26.2-14.1-69-15.1-80.5-8.5-4.1 2.3-9.1.9-11.4-3.1-2.3-4.1-.9-9.1 3.1-11.4 14.8-8.3 61.8-7.3 91.9 8.7 3.8 2 5.1 6.8 3.1 10.6-2 3.8-6.8 5.1-10.6 3.1z"></path>
+            </svg>
+            <h1>Spotify Genre Predictor</h1>
+        </div>
+
+        <div class="search-section">
+            <label>Get features by song name (V2.0 Feature)</label>
+            <input type="text" placeholder="Song Name (e.g., Blinding Lights)">
+            <input type="text" placeholder="Artist Name (e.g., The Weeknd)">
+        </div>
+
+        <form action="/predict" method="POST">
+            <div class="form-group">
+                <label for="danceability">Danceability (0.0-1.0)</label>
+                <input type="range" id="danceability" name="danceability" min="0.0" max="1.0" step="0.01" value="0.5">
+            </div>
+            <div class="form-group">
+                <label for="energy">Energy (0.0-1.0)</label>
+                <input type="range" id="energy" name="energy" min="0.0" max="1.0" step="0.01" value="0.5">
+            </div>
+            <div class="form-group">
+                <label for="loudness">Loudness (-60 to 0 dB)</label>
+                <input type="range" id="loudness" name="loudness" min="-60.0" max="0.0" step="0.1" value="-5.0">
+            </div>
+            <div class="form-group">
+                <label for="speechiness">Speechiness (0.0-1.0)</label>
+                <input type="range" id="speechiness" name="speechiness" min="0.0" max="1.0" step="0.01" value="0.1">
+            </div>
+            <div class="form-group">
+                <label for="acousticness">Acoustics (0.0-1.0)</label>
+                <input type="range" id="acousticness" name="acousticness" min="0.0" max="1.0" step="0.01" value="0.1">
+            </div>
+            <div class="form-group">
+                <label for="instrumentalness">Instrumentalness (0.0-1.0)</label>
+                <input type="range" id="instrumentalness" name="instrumentalness" min="0.0" max="1.0" step="0.01" value="0.0">
+            </div>
+            <div class="form-group">
+                <label for="liveness">Liveness (0.0-1.0)</label>
+                <input type="range" id="liveness" name="liveness" min="0.0" max="1.0" step="0.01" value="0.1">
+            </div>
+            <div class="form-group">
+                <label for="valence">Valence (0.0-1.0)</label>
+                <input type="range" id="valence" name="valence" min="0.0" max="1.0" step="0.01" value="0.5">
+            </div>
+            <div class="form-group">
+                <label for="tempo">Tempo (0-250 BPM)</label>
+                <input type="range" id="tempo" name="tempo" min="0.0" max="250.0" step="0.1" value="120.0">
+            </div>
+            
+            <div class="form-group">
+                <label for="key">Key (0-11)</label>
+                <select id="key" name="key">
+                    <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                    <option value="3">3</option><option value="4">4</option><option value="5" selected>5</option>
+                    <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                    <option value="9">9</option><option value="10">10</option><option value="11">11</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="mode">Mode (0=Minor, 1=Major)</label>
+                <select id="mode" name="mode">
+                    <option value="0">0 (Minor)</option>
+                    <option value="1" selected>1 (Major)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="time_signature">Time Signature</label>
+                <select id="time_signature" name="time_signature">
+                    <option value="1">1/4</option><option value="3">3/4</option>
+                    <option value="4" selected>4/4</option><option value="5">5/4</option>
+                </select>
+            </div>
+            
+            <input type="submit" value="Predict Genre">
+        </form>
+        
+        <div class="result">
+            <h2>{{ prediction_result }}</h2>
+        </div>
+        
+        <div class="quote-section">
+            <p>"Music is the soundtrack of your life."</p>
+            <p>- Dick Clark</p>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Ignore the large dataset
+data/
+
+# Ignore all log files and their folder
+logs/
+*.log
+
+# Ignore Python's temporary cache files
+__pycache__/
+*.pyc
+
+# Ignore VS Code settings
+.vscode/
