@@ -17,22 +17,13 @@ from src.exception import CustomException
 
 class CustomData:
     """
-    This class defines the exact data structure that the
-    web form (app.py) will send to the pipeline.
+    This class takes the data from the Streamlit sliders.
     """
     def __init__(self,
-                 danceability: float,
-                 energy: float,
-                 loudness: float,
-                 speechiness: float,
-                 acousticness: float,
-                 instrumentalness: float,
-                 liveness: float,
-                 valence: float,
-                 tempo: float,
-                 key: int,
-                 mode: int,
-                 time_signature: int):
+                 danceability: float, energy: float, loudness: float,
+                 speechiness: float, acousticness: float, instrumentalness: float,
+                 liveness: float, valence: float, tempo: float,
+                 key: int, mode: int, time_signature: int):
         
         self.danceability = danceability
         self.energy = energy
@@ -49,27 +40,19 @@ class CustomData:
 
     def get_data_as_dataframe(self):
         """
-        Converts the user's input data into a single-row DataFrame
-        that our model's preprocessor can understand.
+        Converts the slider data into a single-row DataFrame
         """
         try:
             custom_data_input_dict = {
-                "danceability": [self.danceability],
-                "energy": [self.energy],
-                "loudness": [self.loudness],
-                "speechiness": [self.speechiness],
-                "acousticness": [self.acousticness],
-                "instrumentalness": [self.instrumentalness],
-                "liveness": [self.liveness],
-                "valence": [self.valence],
-                "tempo": [self.tempo],
-                "key": [self.key],
-                "mode": [self.mode],
-                "time_signature": [self.time_signature],
+                "danceability": [self.danceability], "energy": [self.energy],
+                "loudness": [self.loudness], "speechiness": [self.speechiness],
+                "acousticness": [self.acousticness], "instrumentalness": [self.instrumentalness],
+                "liveness": [self.liveness], "valence": [self.valence],
+                "tempo": [self.tempo], "key": [self.key],
+                "mode": [self.mode], "time_signature": [self.time_signature],
             }
-            
             df = pd.DataFrame(custom_data_input_dict)
-            logging.info("CustomData converted to DataFrame successfully.")
+            logging.info("CustomData (from sliders) converted to DataFrame.")
             return df
         
         except Exception as e:
@@ -77,63 +60,39 @@ class CustomData:
 
 class PredictPipeline:
     """
-    This class loads all the saved artifacts (model, preprocessor, etc.)
-    and uses them to make a prediction on new data.
+    This is the "brain" for the slider app.
+    It predicts for ONE song at a time.
     """
     def __init__(self):
         logging.info("PredictPipeline initialized.")
-        # Define the paths to all our saved artifacts
         self.model_path = os.path.join("artifacts", "spotify_genre_model.pkl")
         self.preprocessor_path = os.path.join("artifacts", "preprocessor.pkl")
         self.label_encoder_path = os.path.join("artifacts", "label_encoder.pkl")
 
     def predict(self, features_df):
         """
-        Takes a DataFrame of new data, applies all transformations,
-        and returns a predicted genre name.
+        Takes one row of data and returns ONE genre and ONE confidence.
         """
         try:
-            logging.info("Starting prediction...")
+            logging.info("Starting single prediction...")
             
-            # Load the saved objects
             model = pickle.load(open(self.model_path, "rb"))
             preprocessor = pickle.load(open(self.preprocessor_path, "rb"))
             label_encoder = pickle.load(open(self.label_encoder_path, "rb"))
-            logging.info("All artifacts loaded successfully.")
+            logging.info("All artifacts loaded.")
 
-            # Apply the preprocessor (scaling, one-hot encoding)
             processed_data = preprocessor.transform(features_df)
-            logging.info("Data transformed using saved preprocessor.")
+            logging.info("Data transformed.")
 
-            # Make the prediction
-            prediction_encoded = model.predict(processed_data)
-            logging.info(f"Encoded prediction: {prediction_encoded}")
+            probabilities = model.predict_proba(processed_data)
 
-            # Decode the prediction (e.g., turn '5' into 'Pop')
+            confidence = probabilities.max() * 100 # This is a single number
+            prediction_encoded = [probabilities.argmax()]
             predicted_genre = label_encoder.inverse_transform(prediction_encoded)
-            logging.info(f"Decoded prediction: {predicted_genre[0]}")
+            logging.info(f"Decoded prediction: {predicted_genre[0]} with {confidence:.2f}% confidence.")
 
-            return predicted_genre[0]
+            # Return single values, NOT lists. This fixes the error.
+            return predicted_genre[0], confidence 
 
         except Exception as e:
             raise CustomException(e, sys)
-
-# This block is for testing
-if __name__ == '__main__':
-    logging.info("Running PredictPipeline as a standalone script...")
-    
-    # Create a sample song (example: Pop-like song)
-    sample_data = CustomData(
-        danceability=0.7, energy=0.8, loudness=-5.0, speechiness=0.1,
-        acousticness=0.2, instrumentalness=0.0, liveness=0.15,
-        valence=0.6, tempo=120.0, key=5, mode=1, time_signature=4
-    )
-    
-    # Convert to DataFrame
-    sample_df = sample_data.get_data_as_dataframe()
-    
-    # Get a prediction
-    pipeline = PredictPipeline()
-    result = pipeline.predict(sample_df)
-    
-    print(f"Prediction test successful. Predicted genre: {result}")
