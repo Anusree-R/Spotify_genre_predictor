@@ -1,4 +1,4 @@
-# app.py
+# app.py (This is your ONLY app file)
 
 import os
 import sys
@@ -16,14 +16,12 @@ from src.logger import logging
 
 # --- 1. SET UP THE PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="Spotify Genre Predictor",
+    page_title="Spotify Genre Predictor", #<-- Title for the browser tab
     page_icon="🎵",
-    layout="wide",
-    initial_sidebar_state="auto"
+    layout="wide"
 )
 
-# --- 2. ADD YOUR HEADER AND QUOTE ---
-# Use a logo with a transparent background for dark mode
+# --- 2. HEADER ---
 logo_svg = """
 <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
     <svg width="50" height="50" viewBox="0 0 167.5 167.5" xmlns="http://www.w3.org/2000/svg" style="fill: #1DB954;">
@@ -33,99 +31,51 @@ logo_svg = """
 </div>
 """
 st.markdown(logo_svg, unsafe_allow_html=True)
-#st.title("Spotify Genre Predictor")
 st.markdown("*Music is the soundtrack of your life.* - Dick Clark")
-
-st.markdown("---") # Adds a horizontal line
+st.markdown("---")
 
 # --- 3. CREATE THE FORM ---
 with st.form("prediction_form"):
     
-    # We removed the "Numeric Features" header
-    # Instead, we'll use 3 columns for a cleaner layout
     col1, col2, col3 = st.columns(3)
     
-    # --- Column 1 ---
     with col1:
         st.subheader("Audio Properties")
-        danceability = st.slider(
-            "Danceability", 0.0, 1.0, 0.5, 0.01,
-            help="How suitable a track is for dancing based on tempo, rhythm stability, etc."
-        )
-        energy = st.slider(
-            "Energy", 0.0, 1.0, 0.5, 0.01,
-            help="A perceptual measure of intensity and activity (e.g., fast, loud, noisy)."
-        )
-        loudness = st.slider(
-            "Loudness (dB)", -60.0, 0.0, -5.0, 0.1,
-            help="The overall loudness of a track in decibels (dB)."
-        )
+        danceability = st.slider("Danceability", 0.0, 1.0, 0.5, 0.01, help="How suitable a track is for dancing.")
+        energy = st.slider("Energy", 0.0, 1.0, 0.5, 0.01, help="A perceptual measure of intensity and activity.")
+        loudness = st.slider("Loudness (dB)", -60.0, 0.0, -5.0, 0.1, help="The overall loudness of a track in decibels (dB).")
 
-    # --- Column 2 ---
     with col2:
         st.subheader("Vocal Properties")
-        speechiness = st.slider(
-            "Speechiness", 0.0, 1.0, 0.1, 0.01,
-            help="Detects the presence of spoken words in a track. Higher values mean more speech."
-        )
-        acousticness = st.slider(
-            "Acousticness", 0.0, 1.0, 0.1, 0.01,
-            help="A confidence measure from 0.0 to 1.0 of whether the track is acoustic."
-        )
-        instrumentalness = st.slider(
-            "Instrumentalness", 0.0, 1.0, 0.0, 0.01,
-            help="Predicts whether a track contains no vocals. Values closer to 1.0 are instrumental."
-        )
+        speechiness = st.slider("Speechiness", 0.0, 1.0, 0.1, 0.01, help="Detects the presence of spoken words in a track.")
+        acousticness = st.slider("Acousticness", 0.0, 1.0, 0.1, 0.01, help="A confidence measure of whether the track is acoustic.")
+        instrumentalness = st.slider("Instrumentalness", 0.0, 1.0, 0.0, 0.01, help="Predicts whether a track contains no vocals.")
 
-    # --- Column 3 ---
     with col3:
         st.subheader("Live & Mood Properties")
-        liveness = st.slider(
-            "Liveness", 0.0, 1.0, 0.1, 0.01,
-            help="Detects the presence of an audience in the recording."
-        )
-        valence = st.slider(
-            "Valence", 0.0, 1.0, 0.5, 0.01,
-            help="A measure of musical positiveness (e.g., happy, cheerful, euphoric)."
-        )
-        tempo = st.slider(
-            "Tempo (BPM)", 0.0, 250.0, 120.0, 0.1,
-            help="The speed or pace of a given piece, in beats per minute (BPM)."
-        )
+        liveness = st.slider("Liveness", 0.0, 1.0, 0.1, 0.01, help="Detects the presence of an audience in the recording.")
+        valence = st.slider("Valence", 0.0, 1.0, 0.5, 0.01, help="A measure of musical positiveness (e.g., happy, cheerful).")
+        tempo = st.slider("Tempo (BPM)", 0.0, 250.0, 120.0, 0.1, help="The speed or pace of a given piece, in beats per minute (BPM).")
 
-    st.markdown("---") # Horizontal line
-    
-    # We removed the "Categorical Features" header
+    st.markdown("---")
     st.subheader("Track Characteristics")
+    
     cat_col1, cat_col2, cat_col3 = st.columns(3)
     
     with cat_col1:
-        key = st.selectbox(
-            "Key (0-11)", options=list(range(12)), index=5,
-            help="The key the track is in (e.g., 0=C, 1=C#, 2=D, etc.)."
-        )
-        
+        key = st.selectbox("Key (0-11)", options=list(range(12)), index=5, help="The key the track is in (e.g., 0=C, 1=C#, 2=D, etc.).")
     with cat_col2:
-        mode = st.selectbox(
-            "Mode (0=Minor, 1=Major)", options=[0, 1], index=1,
-            help="The modality (Major or Minor) of a track."
-        )
-        
+        mode = st.selectbox("Mode (0=Minor, 1=Major)", options=[0, 1], index=1, help="The modality (Major or Minor) of a track.")
     with cat_col3:
-        time_signature = st.selectbox(
-            "Time Signature", options=[1, 3, 4, 5], index=2,
-            help="An estimated time signature (e.g., 3 = 3/4, 4 = 4/4)."
-        )
+        time_signature = st.selectbox("Time Signature", options=[1, 3, 4, 5], index=2, help="An estimated time signature (e.g., 3 = 3/4, 4 = 4/4).")
 
     st.markdown("---")
-    
-    # --- The "Predict" button ---
     submitted = st.form_submit_button("Predict Genre")
 
-# --- 4. HANDLE THE PREDICTION (and the new result design) ---
+# --- 4. HANDLE THE PREDICTION ---
 if submitted:
     try:
-        logging.info("Prediction button clicked. Creating CustomData.")
+        logging.info("Live prediction started.")
         data = CustomData(
             danceability=danceability, energy=energy, loudness=loudness,
             speechiness=speechiness, acousticness=acousticness, instrumentalness=instrumentalness,
@@ -134,28 +84,26 @@ if submitted:
         )
         
         features_df = data.get_data_as_dataframe()
-        logging.info("Data converted to DataFrame.")
+        logging.info("Live prediction data converted to DataFrame.")
 
         predict_pipeline = PredictPipeline()
-        result = predict_pipeline.predict(features_df)
         
-        logging.info(f"Prediction successful. Result: {result}")
+        # This will now work, as it returns single values
+        result, confidence = predict_pipeline.predict(features_df)
         
-        # --- NEW: Designed Result Box ---
+        logging.info(f"Live prediction successful. Result: {result}")
+        
         st.subheader("Predicted Genre:")
-        st.markdown(f"""
-        <div style="
-            border: 2px solid #1DB954; 
-            border-radius: 10px; 
-            padding: 20px; 
-            text-align: center;
-            background-color: #282828;
-        ">
-            <h1 style="color: #1DB954; margin: 0;">{result}</h1>
-        </div>
-        """, unsafe_allow_html=True)
-        # --- END OF NEW DESIGN ---
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"""
+            <div style="border: 2px solid #1DB954; border-radius: 10px; padding: 20px; text-align: center; background-color: #282828;">
+                <h1 style="color: #1DB954; margin: 0;">{result}</h1>
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            st.metric(label="**Confidence**", value=f"{confidence:.2f} %")
         
     except Exception as e:
-        logging.error(f"An error occurred during Streamlit prediction: {e}")
+        logging.error(f"An error occurred during live prediction: {e}")
         st.error(f"An error occurred: {e}")
